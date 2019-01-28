@@ -5,6 +5,7 @@ from beancount.core.account_types import DEFAULT_ACCOUNT_TYPES as ACCOUNT_TYPES
 from decimal import InvalidOperation
 
 import datetime
+import uuid
 
 __author__ = "Henrique Bastos <henrique@bastos.net>"
 __license__ = "GNU GPLv2"
@@ -60,6 +61,9 @@ def account_name(account):
     name = account.fullname
     name = sanitize_name(name)
 
+    if name == '':
+        # name empty
+        name = "R-%s" % (uuid.uuid4())
     # Beancount account names cannot start with lower case
     name = ACCOUNT_SEP.join(list(map(lambda part: fix_account_name_part(part), name.split(ACCOUNT_SEP))))
 
