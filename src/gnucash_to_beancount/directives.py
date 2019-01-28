@@ -11,9 +11,9 @@ __author__ = "Henrique Bastos <henrique@bastos.net>"
 __license__ = "GNU GPLv2"
 
 
-def meta_from(obj, fields):
+def meta_from(obj, fields, renamed_fields={}):
     """Build a meta dict from fields that have values."""
-    return {k: v
+    return {renamed_fields.get(k,k): v
             for k in fields.split(' ')
             for v in (getattr(obj, k),)
             if v}
@@ -192,7 +192,12 @@ def price_for(split):
 
 
 def Posting(split):
-    meta = meta_from(split, 'memo')
+    meta = meta_from(split, 'memo reconcile_date', {'reconcile_date': 'reconcile-date'})
+    if 'reconcile-date' in meta:
+        if str(meta['reconcile-date'])[0:10] == '1970-01-01':
+            del meta['reconcile-date']
+        else:
+            meta['reconcile-date'] = str(meta['reconcile-date'])
     account = account_name(split.account)
     cost = None
     flag = None
@@ -203,8 +208,10 @@ def Posting(split):
 
 
 def Transaction(txn, postings=None):
-    meta = meta_from(txn, 'num notes')
+    meta = meta_from(txn, 'num notes post_date enter_date', {'post_date': 'date', 'enter_date':'enter-date'})
     if 'notes' in meta: meta['notes'] = meta['notes'].replace('"', '\\"')
+    if 'date' in meta: meta['date'] = str(meta['date'])
+    if 'enter-date' in meta: meta['enter-date'] = str(meta['enter-date'])
     date = txn.post_date
     flag = '*'
     payee = ''
